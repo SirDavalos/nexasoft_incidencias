@@ -19,7 +19,9 @@ class _PantallaDetalleState extends State<PantallaDetalle> {
     setState(() => guardando = true);
     try {
       await widget.gestor.cambiarEstado(widget.id, valor);
-      if (mounted) setState(() {});
+      if (mounted) setState(() {
+        
+      });
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
@@ -78,7 +80,7 @@ class _PantallaDetalleState extends State<PantallaDetalle> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: item.estado,
+                      initialValue: item.estado,
                       decoration: const InputDecoration(
                           labelText: 'Estado actual',
                           border: OutlineInputBorder()),

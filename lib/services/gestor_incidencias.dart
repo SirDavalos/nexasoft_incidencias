@@ -5,16 +5,26 @@ class GestorIncidencias {
   final AlmacenLocal datos = AlmacenLocal();
   List<Incidencia> incidencias = [];
   int cantidadPendientes = 0;
+  int cantidadEnProceso = 0;
+  int cantidadResuelta = 0;
 
   Future<void> iniciar() async {
     incidencias = await datos.leer();
     cantidadPendientes =
         incidencias.where((x) => x.estado == 'Pendiente').length;
+
+    cantidadEnProceso =
+        incidencias.where((x) => x.estado == 'En Proceso').length;
+
+    cantidadResuelta =
+        incidencias.where((x) => x.estado == 'Resuelta').length;
   }
 
   List<Incidencia> buscar(String texto) {
     if (texto.trim().isEmpty) return incidencias;
-    return incidencias.where((x) => x.titulo.contains(texto)).toList();
+    return incidencias
+        .where((x) => x.titulo.toLowerCase().contains(texto.toLowerCase()))
+        .toList();
   }
 
   Incidencia? porId(String id) {
@@ -25,7 +35,6 @@ class GestorIncidencias {
   }
 
   int contar(String estado) {
-    if (estado == 'Pendiente') return cantidadPendientes;
     return incidencias.where((x) => x.estado == estado).length;
   }
 
@@ -36,6 +45,8 @@ class GestorIncidencias {
         break;
       }
     }
+
+    await datos.guardar(incidencias);
   }
 
   Future<void> crear(String titulo, String descripcion, String cliente,
