@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../model/incidencia.dart';
@@ -18,7 +20,17 @@ class AlmacenLocal {
   }
 
   Future<void> guardar(List<Incidencia> lista) async {
+    //16/10/2026: Cambiado la funcion para poder guardar bien
     final datos = lista.map((x) => x.toJson()).toList();
+    prefs.setString(clave, jsonEncode(datos));
+
+    if(!kIsWeb){
+      Directory dir = Directory.current;
+
+      File jsonFile = File("${dir.path}/incidencias.json");
+      jsonFile.writeAsStringSync(jsonEncode(datos));
+    }
+
     await prefs.setString(clave, jsonEncode(datos));
   }
 

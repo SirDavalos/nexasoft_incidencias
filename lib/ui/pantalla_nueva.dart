@@ -14,6 +14,7 @@ class _PantallaNuevaState extends State<PantallaNueva> {
   final titulo = TextEditingController();
   final descripcion = TextEditingController();
   final cliente = TextEditingController();
+  String prioridad = "Media";
   String categoria = 'Software';
   bool ocupado = false;
 
@@ -34,6 +35,7 @@ class _PantallaNuevaState extends State<PantallaNueva> {
         descripcion.text.trim(),
         cliente.text.trim(),
         categoria,
+        prioridad
       );
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
@@ -80,8 +82,8 @@ class _PantallaNuevaState extends State<PantallaNueva> {
                 campo('Título', titulo),
                 campo('Descripción', descripcion, lineas: 4),
                 campo('Cliente', cliente),
-                DropdownButtonFormField<String>(
-                  value: categoria,
+                DropdownButtonFormField<String>( //Categoria
+                  initialValue: categoria, 
                   decoration: const InputDecoration(
                       labelText: 'Categoría', border: OutlineInputBorder()),
                   items: ['Software', 'Hardware', 'Redes']
@@ -90,6 +92,20 @@ class _PantallaNuevaState extends State<PantallaNueva> {
                   onChanged: ocupado
                       ? null
                       : (v) => setState(() => categoria = v ?? 'Software'),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                DropdownButtonFormField<String>( // 16/10/2026: Agregado widget para Prioridad
+                  initialValue: prioridad, 
+                  decoration: const InputDecoration(
+                      labelText: 'Prioridad', border: OutlineInputBorder()),
+                  items: ['Baja', 'Media', 'Alta']
+                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                      .toList(),
+                  onChanged: ocupado
+                      ? null
+                      : (v) => setState(() => prioridad = v ?? 'Media'),
                 ),
                 const SizedBox(height: 24),
                 FilledButton.icon(

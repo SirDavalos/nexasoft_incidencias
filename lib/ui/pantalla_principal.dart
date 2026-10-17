@@ -42,6 +42,12 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     return const Color(0xFFAC4052);
   }
 
+  Color colorPrioridad(String prioridad) { //16/10/2026: Agregado funcion para indicar la prioridad de la incidencia
+    if (prioridad == 'Baja') return const Color.fromARGB(255, 50, 255, 169);
+    if (prioridad == 'Media') return const Color.fromARGB(255, 248, 219, 52);
+    return const Color.fromARGB(255, 255, 10, 10);
+  }
+
   Widget resumen(String etiqueta, String valor, IconData icono) {
     return Expanded(
       child: Card(
@@ -198,36 +204,51 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                                     final item = items[i];
                                     return Card(
                                       margin: const EdgeInsets.only(bottom: 10),
-                                      child: ListTile(
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                                horizontal: 16, vertical: 8),
-                                        title: Text(item.titulo,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.w600)),
-                                        subtitle: Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 8),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            height: 30,
+                                            alignment: Alignment.center,
+                                            color: colorPrioridad(item.prioridad),
+                                            child: 
                                               Text(
-                                                  '${item.id}  ·  ${item.cliente}'),
-                                              const SizedBox(height: 6),
-                                              Text(item.estado,
-                                                  style: TextStyle(
-                                                    color: colorEstado(
-                                                        item.estado),
-                                                    fontWeight: FontWeight.bold,
-                                                  )),
-                                            ],
+                                                "Prioridad: ${item.prioridad}",
+                                                style: TextStyle(fontWeight: FontWeight.w800),
+                                                ),
                                           ),
-                                        ),
-                                        trailing:
-                                            const Icon(Icons.chevron_right),
-                                        onTap: () => abrirDetalle(item),
-                                      ),
+                                          ListTile(
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 16, vertical: 8),
+                                            title: Text(item.titulo,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w600)),
+                                            subtitle: Padding(
+                                              padding:
+                                                  const EdgeInsets.only(top: 8),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                      '${item.id}  ·  ${item.cliente}'),
+                                                  const SizedBox(height: 6),
+                                                  Text(item.estado,
+                                                      style: TextStyle(
+                                                        color: colorEstado(
+                                                            item.estado),
+                                                        fontWeight: FontWeight.bold,
+                                                      )),
+                                                ],
+                                              ),
+                                            ),
+                                            trailing:
+                                                const Icon(Icons.chevron_right),
+                                            onTap: () => abrirDetalle(item),
+                                          ),
+                                        ],
+                                      )
+                                      
                                     );
                                   },
                                 ),
