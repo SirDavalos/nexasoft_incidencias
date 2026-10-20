@@ -15,7 +15,15 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   final GestorIncidencias g = GestorIncidencias();
   bool cargando = true;
   String? error;
-  String busqueda = '';
+  String busqueda = "";
+  //19/10/2026: Agregado variables para los filtros de busqueda
+  String filtroPrioridad = "";
+  String filtroEstado = "";
+  String prioridadSeleccionada = "Todos";
+  String estadoSeleccionado = "Todos";
+  bool defaultSearch = true;
+  //Variable para limpiar el texto de busqueda
+  final busquedaCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -36,13 +44,29 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     if (mounted) setState(() => cargando = false);
   }
 
+  //19/10/2026: Agregado funcion para reestablecer los valores de busqueda
+
+  void restablecerValoresBusqueda() {
+    if (defaultSearch == true) return;
+    setState(() {
+      defaultSearch = true;
+      prioridadSeleccionada = "Todos";
+      estadoSeleccionado = "Todos";
+      filtroEstado = "";
+      filtroPrioridad = "";
+      busqueda = "";
+      busquedaCtrl.clear();
+    });
+  }
+
   Color colorEstado(String estado) {
     if (estado == 'Resuelta') return const Color(0xFF147D64);
     if (estado == 'En proceso') return const Color(0xFFB56B13);
     return const Color(0xFFAC4052);
   }
 
-  Color colorPrioridad(String prioridad) { //16/10/2026: Agregado funcion para indicar la prioridad de la incidencia
+  Color colorPrioridad(String prioridad) {
+    //16/10/2026: Agregado funcion para indicar la prioridad de la incidencia
     if (prioridad == 'Baja') return const Color.fromARGB(255, 50, 255, 169);
     if (prioridad == 'Media') return const Color.fromARGB(255, 248, 219, 52);
     return const Color.fromARGB(255, 255, 10, 10);
@@ -94,7 +118,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
 
   @override
   Widget build(BuildContext context) {
-    final items = g.buscar(busqueda);
+    final items = g.buscar(busqueda, filtroPrioridad, filtroEstado);
     return Scaffold(
       appBar: AppBar(
         title: const Text('NexaSoft | Incidencias'),
@@ -172,15 +196,87 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                         Padding(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 17, vertical: 5),
-                          child: TextField(
-                            decoration: const InputDecoration(
-                              labelText: 'Buscar incidencias',
-                              hintText: 'Ejemplo: WiFi, correo, pantalla',
-                              prefixIcon: Icon(Icons.search),
-                              border: OutlineInputBorder(),
-                            ),
-                            onChanged: (texto) =>
-                                setState(() => busqueda = texto),
+                          child: Column(
+                            children: [
+                              ElevatedButton(
+                                  onPressed: restablecerValoresBusqueda,
+                                  style: ButtonStyle(
+                                    backgroundColor: WidgetStatePropertyAll<Color>(Colors.blueAccent),
+                                    foregroundColor: WidgetStatePropertyAll<Color>(Colors.white),
+                                  ),
+                                  child:
+                                      Text("Restablecer valores de busqueda")),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              TextField(
+                                controller: busquedaCtrl, //El controlador sirve para limpiar cualquier texto a la hora de reestablecer valores
+                                decoration: const InputDecoration(
+                                  labelText: 'Buscar incidencias',
+                                  hintText: 'Ejemplo: WiFi, correo, pantalla',
+                                  prefixIcon: Icon(Icons.search),
+                                  border: OutlineInputBorder(),
+                                ),
+                                onChanged: (texto) => setState(() {
+                                  defaultSearch = false;
+                                  busqueda = texto;
+                                }),
+                              ),
+                              //19/10/2026: widgets agregados para los filtros
+                              SizedBox(
+                                height: 20,
+                              ),
+                              //Filtro para prioridad
+                              DropdownButtonFormField<String>(
+                                key: ValueKey(
+                                    'prioridad_$prioridadSeleccionada'),
+                                initialValue: prioridadSeleccionada,
+                                decoration: const InputDecoration(
+                                  labelText: 'Filtrar por prioridad',
+                                  border: OutlineInputBorder(),
+                                ),
+                                items: ['Todos', 'Baja', 'Media', 'Alta']
+                                    .map((c) => DropdownMenuItem(
+                                        value: c, child: Text(c)))
+                                    .toList(),
+                                onChanged: (v) => setState(() {
+                                  defaultSearch = false;
+                                  prioridadSeleccionada = v ?? "Todos";
+                                  filtroPrioridad =
+                                      prioridadSeleccionada == "Todos"
+                                          ? ""
+                                          : prioridadSeleccionada;
+                                }),
+                              ),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              //Filtro para estado
+                              DropdownButtonFormField<String>(
+                                key: ValueKey('estado_$estadoSeleccionado'),
+                                initialValue: estadoSeleccionado,
+                                decoration: const InputDecoration(
+                                  labelText: 'Filtrar por estado',
+                                  border: OutlineInputBorder(),
+                                ),
+                                items: [
+                                  'Todos',
+                                  'Pendiente',
+                                  'En proceso',
+                                  'Resuelta'
+                                ]
+                                    .map((c) => DropdownMenuItem(
+                                        value: c, child: Text(c)))
+                                    .toList(),
+                                onChanged: (v) => setState(() {
+                                  defaultSearch = false;
+                                  estadoSeleccionado = v ?? "Todos";
+                                  filtroEstado = estadoSeleccionado == "Todos"
+                                      ? ""
+                                      : estadoSeleccionado;
+                                }),
+                              ),
+                            ],
                           ),
                         ),
                         Padding(
@@ -203,53 +299,57 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                                   itemBuilder: (context, i) {
                                     final item = items[i];
                                     return Card(
-                                      margin: const EdgeInsets.only(bottom: 10),
-                                      child: Column(
-                                        children: [
-                                          Container(
-                                            height: 30,
-                                            alignment: Alignment.center,
-                                            color: colorPrioridad(item.prioridad),
-                                            child: 
-                                              Text(
+                                        margin:
+                                            const EdgeInsets.only(bottom: 10),
+                                        child: Column(
+                                          children: [
+                                            Container(
+                                              height: 30,
+                                              alignment: Alignment.center,
+                                              color: colorPrioridad(
+                                                  item.prioridad),
+                                              child: Text(
                                                 "Prioridad: ${item.prioridad}",
-                                                style: TextStyle(fontWeight: FontWeight.w800),
-                                                ),
-                                          ),
-                                          ListTile(
-                                            contentPadding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 16, vertical: 8),
-                                            title: Text(item.titulo,
-                                                style: const TextStyle(
-                                                    fontWeight: FontWeight.w600)),
-                                            subtitle: Padding(
-                                              padding:
-                                                  const EdgeInsets.only(top: 8),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                      '${item.id}  ·  ${item.cliente}'),
-                                                  const SizedBox(height: 6),
-                                                  Text(item.estado,
-                                                      style: TextStyle(
-                                                        color: colorEstado(
-                                                            item.estado),
-                                                        fontWeight: FontWeight.bold,
-                                                      )),
-                                                ],
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w800),
                                               ),
                                             ),
-                                            trailing:
-                                                const Icon(Icons.chevron_right),
-                                            onTap: () => abrirDetalle(item),
-                                          ),
-                                        ],
-                                      )
-                                      
-                                    );
+                                            ListTile(
+                                              contentPadding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 8),
+                                              title: Text(item.titulo,
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w600)),
+                                              subtitle: Padding(
+                                                padding: const EdgeInsets.only(
+                                                    top: 8),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                        '${item.id}  ·  ${item.cliente}'),
+                                                    const SizedBox(height: 6),
+                                                    Text(item.estado,
+                                                        style: TextStyle(
+                                                          color: colorEstado(
+                                                              item.estado),
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        )),
+                                                  ],
+                                                ),
+                                              ),
+                                              trailing: const Icon(
+                                                  Icons.chevron_right),
+                                              onTap: () => abrirDetalle(item),
+                                            ),
+                                          ],
+                                        ));
                                   },
                                 ),
                         ),

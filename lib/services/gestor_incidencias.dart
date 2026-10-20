@@ -19,11 +19,33 @@ class GestorIncidencias {
     cantidadResuelta = incidencias.where((x) => x.estado == 'Resuelta').length;
   }
 
-  List<Incidencia> buscar(String texto) {
-    if (texto.trim().isEmpty) return incidencias;
-    return incidencias
-        .where((x) => x.titulo.toLowerCase().contains(texto.toLowerCase()))
-        .toList();
+  //19/10/2026: funcion "busqueda" modificado para incluir los filtros
+  List<Incidencia> buscar(String texto, String prioridad, String estado) {
+    List<Incidencia> listaFiltrada = incidencias;
+    
+    //Busqueda por nombre
+    if (texto.trim().isNotEmpty) {
+      listaFiltrada = listaFiltrada
+          .where((x) => x.titulo.toLowerCase().contains(texto.toLowerCase()))
+          .toList();
+    }
+
+    //Filtro de prioridad
+    if (prioridad.trim().isNotEmpty){
+        listaFiltrada = listaFiltrada
+          .where((x) => x.prioridad.contains(prioridad))
+          .toList();
+    }
+
+    //Filtro de estado
+    if (estado.isNotEmpty){
+        listaFiltrada = listaFiltrada
+          .where((x) => x.estado.contains(estado))
+          .toList();
+    }
+
+    //Retorna filtro acumulado
+    return listaFiltrada;
   }
 
   Incidencia? porId(String id) {
